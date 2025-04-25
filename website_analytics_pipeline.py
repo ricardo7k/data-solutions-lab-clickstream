@@ -4,6 +4,7 @@ import json
 import logging
 import uuid
 import argparse
+import sys
 
 # Configure basic logging for the pipeline
 # Dataflow automatically captures logs at INFO level and above
