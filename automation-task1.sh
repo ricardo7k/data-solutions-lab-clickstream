@@ -25,7 +25,7 @@ METADATA_FILE="./metadata.json" # Make sure this is in the same directory
 IMAGE_PATH="${REGION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_REPO}/${IMAGE_NAME}:latest"
 
 # Full GCS path for the built Flex Template file
-TEMPLATE_GCS_PATH="gs://${TEMPLATE_BUCKET}/${TEMPLATE_FOLDER}/${IMAGE_NAME}_template.json"
+TEMPLATE_GCS_PATH="gs://${TEMPLATE_BUCKET}/${TEMPLATE_FOLDER}/metadata.json"
 
 # --- Validate essential files exist ---
 echo "Validating essential files..."
