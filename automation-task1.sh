@@ -74,7 +74,7 @@ STAGING_LOCATION="gs://${TEMPLATE_BUCKET}/staging" # GCS staging location
 gcloud dataflow jobs run "${JOB_NAME}" \
   --project="${PROJECT_ID}" \
   --region="${REGION}" \
-  --template="${TEMPLATE_GCS_PATH}" \
+  --gcs-location="${TEMPLATE_GCS_PATH}" \
   --parameters \
 input="gs://${BUCKET_NAME}/challenge-lab-data-dar/*.jsonl",\
 output_dataset="data-solutions-lab.data_solutions_lab",\
