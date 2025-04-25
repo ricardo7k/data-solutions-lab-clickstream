@@ -71,6 +71,21 @@ JOB_NAME="${IMAGE_NAME}-load-$(date '+%Y%m%d-%H%M%S')" # Unique job name
 TEMP_LOCATION="gs://${TEMPLATE_BUCKET}/tmp" # GCS temp location
 STAGING_LOCATION="gs://${TEMPLATE_BUCKET}/staging" # GCS staging location
 
+
+echo "Comando gcloud dataflow jobs run \"${JOB_NAME}\" \
+  --project=\"${PROJECT_ID}\" \
+  --region=\"${REGION}\" \
+  --gcs-location=\"${TEMPLATE_GCS_PATH}\" \
+  --parameters \
+input=\"gs://${BUCKET_NAME}/challenge-lab-data-dar/*.jsonl\",\
+output_dataset=\"data-solutions-lab.data_solutions_lab\",\
+visits_table=\"visits\",\
+events_table=\"events\",\
+purchase_items_table=\"purchase_items\",\
+tempLocation=\"${TEMP_LOCATION}\",\
+stagingLocation=\"${STAGING_LOCATION}\""
+
+
 gcloud dataflow jobs run "${JOB_NAME}" \
   --project="${PROJECT_ID}" \
   --region="${REGION}" \
