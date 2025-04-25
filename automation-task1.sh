@@ -66,24 +66,24 @@ echo "Flex Template built successfully at ${TEMPLATE_GCS_PATH}"
 # --- Step 3: Optional: Launch the Dataflow Job ---
 # Uncomment the following lines if you want the script to also launch the job
 
-# echo "Launching Dataflow job..."
-# JOB_NAME="${IMAGE_NAME}-load-$(date '+%Y%m%d-%H%M%S')" # Unique job name
-# TEMP_LOCATION="gs://${TEMPLATE_BUCKET}/tmp" # GCS temp location
-# STAGING_LOCATION="gs://${TEMPLATE_BUCKET}/staging" # GCS staging location
+echo "Launching Dataflow job..."
+JOB_NAME="${IMAGE_NAME}-load-$(date '+%Y%m%d-%H%M%S')" # Unique job name
+TEMP_LOCATION="gs://${TEMPLATE_BUCKET}/tmp" # GCS temp location
+STAGING_LOCATION="gs://${TEMPLATE_BUCKET}/staging" # GCS staging location
 
-# gcloud dataflow jobs run "${JOB_NAME}" \
-#   --project="${PROJECT_ID}" \
-#   --region="${REGION}" \
-#   --template-file-gcs-location="${TEMPLATE_GCS_PATH}" \
-#   --temp-location="${TEMP_LOCATION}" \
-#   --staging-location="${STAGING_LOCATION}" \
-#   --parameters \
-# input="gs://${BUCKET_NAME}/challenge-lab-data-dar/*.jsonl",\
-# output_dataset="data-solutions-lab.data_solutions_lab",\
-# visits_table="visits",\
-# events_table="events",\
-# purchase_items_table="purchase_items"
+gcloud dataflow jobs run "${JOB_NAME}" \
+  --project="${PROJECT_ID}" \
+  --region="${REGION}" \
+  --template-file-gcs-location="${TEMPLATE_GCS_PATH}" \
+  --temp-location="${TEMP_LOCATION}" \
+  --staging-location="${STAGING_LOCATION}" \
+  --parameters \
+input="gs://${BUCKET_NAME}/challenge-lab-data-dar/*.jsonl",\
+output_dataset="data-solutions-lab.data_solutions_lab",\
+visits_table="visits",\
+events_table="events",\
+purchase_items_table="purchase_items"
 
-# echo "Dataflow job '${JOB_NAME}' launched successfully."
+echo "Dataflow job '${JOB_NAME}' launched successfully."
 
 echo "Automation script finished."
