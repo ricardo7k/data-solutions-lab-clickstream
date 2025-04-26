@@ -13,6 +13,7 @@ TEMPLATE_BUCKET="data-solution-lab-data" # Bucket to store the built Flex Templa
 TEMPLATE_FOLDER="dataflow_flex_templates" # Folder within the template bucket
 IMAGE_REPO="data-solutions-lab" # Artifact Registry repository name
 IMAGE_NAME="website_analytics_pipeline" # Name for your Docker image
+DF_JOB_NAME="website-analytics-pipeline" # Name for your Docker image
 
 # Paths relative to the script's directory
 DOCKERFILE="./Dockerfile"
@@ -67,22 +68,33 @@ echo "Flex Template built successfully at ${TEMPLATE_GCS_PATH}"
 # Uncomment the following lines if you want the script to also launch the job
 
 echo "Launching Dataflow job..."
-JOB_NAME="${IMAGE_NAME}-load-$(date '+%Y%m%d-%H%M%S')" # Unique job name
+JOB_NAME="${DF_JOB_NAME}-load-$(date '+%Y%m%d-%H%M%S')" # Unique job name
 TEMP_LOCATION="gs://${TEMPLATE_BUCKET}/tmp" # GCS temp location
 STAGING_LOCATION="gs://${TEMPLATE_BUCKET}/staging" # GCS staging location
 
-gcloud dataflow jobs run "${JOB_NAME}" \
+# Echo the command with variables substituted
+echo "Executing command:"
+echo "gcloud dataflow flex-template run \"${JOB_NAME}\" \\"
+echo "  --project=\"${PROJECT_ID}\" \\"
+echo "  --region=\"${REGION}\" \\"
+echo "  --template-file-gcs-location=\"${TEMPLATE_GCS_PATH}\" \\"
+echo "  --parameters \\"
+echo "input=\"gs://${BUCKET_NAME}/challenge-lab-data-dar/*.jsonl\",\\"
+echo "output_dataset=\"data_solutions_lab\",\\"
+echo "visits_table=\"visits\",\\"
+echo "events_table=\"events\",\\"
+echo "purchase_items_table=\"purchase_items\""
+
+gcloud dataflow flex-template run "${JOB_NAME}" \
   --project="${PROJECT_ID}" \
   --region="${REGION}" \
-  --gcs-location="${TEMPLATE_GCS_PATH}" \
+  --template-file-gcs-location="${TEMPLATE_GCS_PATH}" \
   --parameters \
 input="gs://${BUCKET_NAME}/challenge-lab-data-dar/*.jsonl",\
-output_dataset="data-solutions-lab.data_solutions_lab",\
+output_dataset="data_solutions_lab",\
 visits_table="visits",\
 events_table="events",\
-purchase_items_table="purchase_items",\
-tempLocation="${TEMP_LOCATION}",\
-stagingLocation="${STAGING_LOCATION}"
+purchase_items_table="purchase_items"
 
 echo "Dataflow job '${JOB_NAME}' launched successfully."
 
