@@ -142,10 +142,28 @@ To run this pipeline on Dataflow, it's recommended to build it as a Flex Templat
 
 ## Running Locally (for Testing)
 
-You can run the pipeline locally for testing purposes. Ensure you have the Google Cloud SDK authenticated (`gcloud auth application-default login`) and the necessary libraries installed (`pip install apache-beam[gcp]`).
+You can run the pipeline locally for testing purposes. Ensure you have the Google Cloud SDK authenticated (`gcloud auth application-default login`) and the necessary libraries installe (`pip install apache-beam[gcp]`).
+
+1.  **Create The Environment**
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install pip wheel setuptools build pyyaml jsonschema -U
+pip install 'apache-beam[gcp]'
+```
+
+2.  **Login Google Cloud**
+
+```bash
+gcloud auth application-default login
+```
+
+3.  **Run the Pipeline**
 
 ```bash 
-python31 website_analytics_pipeline.py \
+cd task1/
+python3.11 website_analytics_pipeline.py \
   --runner=DirectRunner \
   --input="gs://data-solution-lab-data/challenge-lab-data-dar/*.jsonl" \
   --output_dataset=data_solutions_lab \
@@ -155,6 +173,8 @@ python31 website_analytics_pipeline.py \
   --project=data-solutions-lab \
   --temp_location=gs://data-solution-lab-data/temp
 ```
+* Ensure that the parameters `--input`, `--output_dataset`, `--visits_table`, `--events_table`, and `--purchase_items_table` points to right locations in your Google Cloud.
 
 ### Useful Links
-https://cloud.google.com/dataflow/docs/guides/troubleshoot-custom-container?hl=pt-br
+* Collab Running this code: https://colab.research.google.com/drive/1sYc93vzy9PCgrrunsAS5bBukomv_YZW0?usp=sharing
+* Troubleshoot: https://cloud.google.com/dataflow/docs/guides/troubleshoot-custom-container?hl=pt-br
