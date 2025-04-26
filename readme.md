@@ -144,7 +144,8 @@ To run this pipeline on Dataflow, it's recommended to build it as a Flex Templat
 
 You can run the pipeline locally for testing purposes. Ensure you have the Google Cloud SDK authenticated (`gcloud auth application-default login`) and the necessary libraries installed (`pip install apache-beam[gcp]`).
 
-```bash python31 website_analytics_pipeline.py \
+```bash 
+python31 website_analytics_pipeline.py \
   --runner=DirectRunner \
   --input="gs://data-solution-lab-data/challenge-lab-data-dar/*.jsonl" \
   --output_dataset=data_solutions_lab \
