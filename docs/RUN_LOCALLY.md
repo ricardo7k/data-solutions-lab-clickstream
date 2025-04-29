@@ -1,9 +1,3 @@
-
----
-
-**File: `docs/RUN_LOCALLY.md`**
-
-```markdown
 # Running the Pipeline Locally (for Testing)
 
 You can execute the Apache Beam pipeline on your local machine using the `DirectRunner`. This is useful for rapid development, debugging, and testing pipeline logic without deploying to Dataflow. However, it still requires access to Google Cloud resources (GCS for input/temp, BigQuery for output) from your machine.
@@ -75,8 +69,8 @@ python3.11 website_analytics_pipeline.py \
   # Add --region if needed by specific I/O connectors, though often optional for DirectRunner
   # Add any other custom arguments your pipeline defines
 
-echo "Local execution finished."
-
+  echo "Local execution finished."
+```
 *   **Replace:** Update the placeholder values (`your-gcp-project-id`, `gs://your-input-bucket/...`, etc.) with your actual GCP resource names.
 *   **`--runner=DirectRunner`:** This is the key flag that tells Beam to run locally.
 *   **`--project`:** Specifies the GCP project containing your GCS buckets and BigQuery dataset.

@@ -1,9 +1,3 @@
-
----
-
-**File: `docs/PIPELINE_STRUCTURE.md`**
-
-```markdown
 # Apache Beam Pipeline Structure
 
 The clickstream data processing pipeline is defined in `website_analytics_pipeline.py` using the Apache Beam Python SDK.
@@ -90,4 +84,4 @@ with beam.Pipeline(options=pipeline_options) as pipeline:
         create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
         write_disposition=known_args.write_disposition
     )
-
+```

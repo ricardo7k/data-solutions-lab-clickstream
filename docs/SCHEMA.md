@@ -24,6 +24,7 @@ The input data consists of files in JSON Lines (JSONL) format, where each line r
   ]
   // Other session metadata...
 }
+```
 
 *   **Note:** The exact structure may vary, but the pipeline expects `session_id` and a list of events (`page_visits` or similar) with `event_type` and `timestamp`. The example above includes common event types like `page_view`, `add_to_cart`, `purchase`, and `click_view`.
 

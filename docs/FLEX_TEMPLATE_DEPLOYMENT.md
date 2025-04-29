@@ -1,9 +1,3 @@
-
----
-
-**File: `docs/FLEX_TEMPLATE_DEPLOYMENT.md`**
-
-```markdown
 # Building and Deploying as a Dataflow Flex Template
 
 To run this pipeline robustly and scalably on Google Cloud, building it as a Dataflow Flex Template is recommended. This allows easy execution via the UI, `gcloud`, or orchestration tools like Cloud Composer.
@@ -238,7 +232,7 @@ with DAG(
         # Optional: Specify service account, network, etc.
         # service_account_email='your-dataflow-worker-sa@...',
     )
-
+```
 
 Integrating this Flex Template into a Cloud Composer DAG provides a robust, automated, and manageable solution for running your data pipeline.
 
