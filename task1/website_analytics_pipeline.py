@@ -252,6 +252,12 @@ def run(argv=None, save_main_session=True):
         required=True,
         help='BigQuery purchase items table ID.')
 
+    parser.add_argument(
+        '--write_disposition',
+        dest='write_disposition',
+        required=False,
+        help='BigQuery truncate or append tables.')
+    
     # Parse known arguments, leaving unknown ones for PipelineOptions
     # Pass the received argv to argparse
     known_args, pipeline_args = parser.parse_known_args(argv)
@@ -312,27 +318,30 @@ def run(argv=None, save_main_session=True):
         visits_pcollection = transformed_data[TransformVisitData.OUTPUT_TAG_VISITS]
         events_pcollection = transformed_data[TransformVisitData.OUTPUT_TAG_EVENTS]
         purchase_items_pcollection = transformed_data[TransformVisitData.OUTPUT_TAG_PURCHASE_ITEMS]
+ 
+        write_disposition = beam.io.BigQueryDisposition.WRITE_TRUNCATE if known_args.write_disposition == "truncate" else beam.io.BigQueryDisposition.WRITE_APPEND
+        logging.info(f"Write disposition: {write_disposition}")
 
         # Write each PCollection to the respective BigQuery table
         visits_pcollection | 'WriteVisitsToBigQuery' >> beam.io.WriteToBigQuery(
             visits_table_spec,
             schema=visits_schema,
             create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
-            write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE # Use WRITE_APPEND for incremental loads
+            write_disposition=write_disposition
         )
 
         events_pcollection | 'WriteEventsToBigQuery' >> beam.io.WriteToBigQuery(
             events_table_spec,
             schema=events_schema,
             create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
-            write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE
+            write_disposition=write_disposition
         )
 
         purchase_items_pcollection | 'WritePurchaseItemsToBigQuery' >> beam.io.WriteToBigQuery(
             purchase_items_table_spec,
             schema=purchase_items_schema,
             create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
-            write_disposition=beam.io.BigQueryDisposition.WRITE_TRUNCATE
+            write_disposition=write_disposition
         )
 
 # --- Entry Point ---
