@@ -1,4 +1,4 @@
-Flask==3.0.1
 google-cloud-pubsub
 google-cloud-bigquery
 google-cloud-secret-manager
+Flask

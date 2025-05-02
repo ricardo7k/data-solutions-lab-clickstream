@@ -1,6 +1,14 @@
-FROM gcr.io/dataflow-templates-base/python311-template-launcher-base:latest as template_launcher
-FROM apache/beam_python3.11_sdk:latest
+FROM python:3.11-slim
+WORKDIR /app
 
-COPY --from=template_launcher /opt/google/dataflow/python_template_launcher /opt/google/dataflow/python_template_launcher
-COPY website_analytics_pipeline.py /template/
-ENV FLEX_TEMPLATE_PYTHON_PY_FILE="/template/website_analytics_pipeline.py"
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ecommerce_pipeline.py .
+
+COPY run_pipeline.sh .
+RUN chmod +x /app/run_pipeline.sh
+
+ENTRYPOINT ["/app/run_pipeline.sh"]
+
+CMD []

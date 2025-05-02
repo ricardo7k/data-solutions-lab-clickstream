@@ -1,6 +1,8 @@
 #Data to test
 challenge-lab-data-dar/
 .DS_Store
+*credentials.json
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

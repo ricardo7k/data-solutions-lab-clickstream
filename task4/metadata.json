@@ -1,0 +1,51 @@
+{
+    "description": "Dataflow Flex Template to process ecommerce clickstream data from GCS, load into BigQuery, and move processed files.",
+    "name":"ecommerceflex",
+    "parameters": [
+      {
+        "name": "gcs_input_path",
+        "label": "Input GCS File Pattern",
+        "helpText": "Cloud Storage file pattern of the JSONL input files (e.g., gs://your-bucket/*.jsonl)."
+      },
+      {
+        "name": "gcs_destination_bucket",
+        "label": "Processed Files Destination Bucket",
+        "helpText": "Name of the Cloud Storage bucket to move processed files to (e.g., your-bucket-processed). Note: This should be the bucket name, not a full GCS path."
+      },
+      {
+        "name": "dataset_id",
+        "label": "BigQuery Output Dataset ID",
+        "helpText": "BigQuery dataset ID to write the output tables to."
+      },
+      {
+        "name": "visits_table",
+        "label": "BigQuery Visits Table Name",
+        "helpText": "Name of the BigQuery table for visits data."
+      },
+      {
+        "name": "events_table",
+        "label": "BigQuery Events Table Name",
+        "helpText": "Name of the BigQuery table for events data."
+      },
+      {
+        "name": "purchase_items_table",
+        "label": "BigQuery Purchase Items Table Name",
+        "helpText": "Name of the BigQuery table for purchase items data."
+      },
+       {
+        "name": "write_disposition",
+        "label": "BigQuery Write Disposition",
+        "helpText": "BigQuery write disposition ('append' or 'truncate').",
+        "isOptional": true,
+        "defaultValue": "append"
+      },
+      {
+        "name": "launched_by",
+        "label": "Launched By Identifier",
+        "helpText": "Identifier for the entity that launched the pipeline (e.g., composer, local).",
+        "isOptional": true,
+        "defaultValue": "unknown"
+      }
+    ]
+  }
+  
