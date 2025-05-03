@@ -1,5 +1,4 @@
 #!/bin/bash
-# Script to execute the Python pipeline using environment variables
 
 set -e
 

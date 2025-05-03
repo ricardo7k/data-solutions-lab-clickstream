@@ -1,3 +1,6 @@
+* **DataflowRunner to append**
+Same code from the `task1/ecommerce_pipeline.py` file
+
 ```bash
 python task1/ecommerce_pipeline.py \
  --runner=DataflowRunner \

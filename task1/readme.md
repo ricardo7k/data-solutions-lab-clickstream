@@ -22,11 +22,9 @@ python task1/ecommerce_pipeline.py \
  --write_disposition="truncate"
  ```
 
-
 * Task 3 Scheduler
 ```bash
 gcloud builds submit --tag us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/cloudrun_scheduler_ecommerce_pipeline ./task1/
-
 
 gcloud --project=dsl-clickstream run jobs create ecommerce-pipeline-append-job \
     --image us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/cloudrun_scheduler_ecommerce_pipeline \
@@ -43,3 +41,4 @@ gcloud --project=dsl-clickstream run jobs update ecommerce-pipeline-append-job \
     --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/dsl-clickstream/jobs/ecommerce-pipeline-append-job:run" \
     --oauth-service-account-email cloud-run@dsl-clickstream.iam.gserviceaccount.com \
     --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
+```

@@ -1,4 +1,3 @@
-
 * **Use gcloud builds to send image to Artifact Registry**
 ```bash
 gcloud builds gcloud builds submit --tag (your-artifact-registry-repository)/cloudrun_subscriber_push
@@ -35,6 +34,9 @@ gcloud compute health-checks create http mig-subscriber-health-check \
   --unhealthy-threshold=3 \
   --region=us-central1
 ```
+
+* **Create Mig solution**
+
 * Create the template for mig
 ```bash
 gcloud compute instance-templates create-with-container mig-subscriber-template \
@@ -51,6 +53,7 @@ gcloud compute instance-templates create-with-container mig-subscriber-template 
   --container-env=GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT \
   --container-env=PUBSUB_TOPIC_ID=$PUBSUB_TOPIC_ID
 ```
+
 * Create the mig
 ```bash
 gcloud compute instance-groups managed create mig-pubsub-subscriber \
@@ -63,6 +66,7 @@ gcloud compute instance-groups managed create mig-pubsub-subscriber \
   --health-check="https://www.googleapis.com/compute/v1/projects/dsl-clickstream/regions/us-central1/healthChecks/mig-subscriber-health-check" \
   --initial-delay=300
 ```
+
 * Set Mig Autoscaling
 ```bash
 gcloud compute instance-groups managed set-autoscaling mig-pubsub-subscriber \
@@ -75,6 +79,7 @@ gcloud compute instance-groups managed set-autoscaling mig-pubsub-subscriber \
   --update-stackdriver-metric=pubsub.googleapis.com/subscription/num_undelivered_messages \
   --stackdriver-metric-single-instance-assignment=10.0
 ```
+
 * Open Firewall rule
 ```bash
 gcloud compute firewall-rules create allow-health-check \
@@ -82,6 +87,7 @@ gcloud compute firewall-rules create allow-health-check \
     --source-ranges 130.211.0.0/22,35.191.0.0/16 \
     --network default
 ```
+
 * Run streaming dataflow for click_views
 ```bash
 python task3/subscribers/streaming_ingestion_pageviews_pipeline.py \
