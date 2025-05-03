@@ -1,3 +1,5 @@
+# Syntetic Data Generation
+
 * **Create Pub/Sub Publisher**
 
 * Example: Generate 5 sessions per minute for 2 minutes, starting now (using defaults for rate/duration)

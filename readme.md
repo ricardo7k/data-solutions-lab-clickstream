@@ -95,7 +95,7 @@ airflow users create \
     --email ricardo7k@yahoo.com.br \
     --password admin
 ```
-*If you encounter errors when running DirectRunner:
+`Note: If you encounter errors when running DirectRunner:`
 
 ```bash
 pip cache purge
