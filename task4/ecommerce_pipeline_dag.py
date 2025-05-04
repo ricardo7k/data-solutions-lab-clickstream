@@ -23,7 +23,7 @@ BQ_VISITS = os.environ.get("BQ_VISITS")
 BQ_EVENTS = os.environ.get("BQ_EVENTS")
 BQ_PURCHASE_ITEMS = os.environ.get("BQ_PURCHASE_ITEMS")
 GCS_PROCESSED_BUCKET_FINAL = f"{GCS_BUCKET_INPUT}-processed"
-FLEX_TEMPLATE_GCS_PATH = f"{GCS_BUCKET_INPUT}-dataflow-temp/template/metadata.json"
+FLEX_TEMPLATE_GCS_PATH = f"gs://{GCS_BUCKET_INPUT}-dataflow-temp/template/metadata.json"
 
 FLEX_TEMPLATE_PARAMETERS = {
     "gcs_input_path": f"gs://{GCS_BUCKET_INPUT}/*.jsonl",
@@ -36,7 +36,7 @@ FLEX_TEMPLATE_PARAMETERS = {
     "launched_by": "composer"
 }
 FLEX_TEMPLATE_ENVIRONMENT = {
-    "serviceAccountEmail": {SERVICE_ACCOUNT},
+    "serviceAccountEmail": SERVICE_ACCOUNT,
     "machineType": "e2-medium",
     "stagingLocation": f"gs://{GCS_BUCKET_INPUT}-dataflow-temp/staging",
     "tempLocation": f"gs://{GCS_BUCKET_INPUT}-dataflow-temp/temp",

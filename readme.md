@@ -80,6 +80,8 @@ export BQ_DATABASE=`<DEV EMAIL>`
 export PUBSUB_TOPIC_ID=`<YOUR PUBSUB TOPIC ID>`
 export PUBSUB_SUB_PULL_ID=`<YOUR PUBSUB PULL SUBSCRIPTION ID>`
 export PUBSUB_SUB_PUSH_ID=`<YOUR PUBSUB PUSH SUBSCRIPTION ID>`
+export PUBSUB_TOPIC_CONF_ID=`<YOUR PUBSUB CONFIRMATION TOPIC ID>`
+export PUBSUB_SUB_CONF_ID=`<YOUR PUBSUB CONFIRMATION TOPIC ID>`
 
 export BQ_DATABASE=`<YOUR BIGQUERY DATABASE NAME>`
 export BQ_VISITS=`<YOUR BIGQUERY VISITS TABLE NAME>`
@@ -132,9 +134,7 @@ python utils/create_ecommerce_bq.py --dataset_id=$BQ_DATABASE \
 --visits_table=$BQ_VISITS \
 --events_table=$BQ_EVENTS \
 --purchase_items_table=$BQ_PURCHASES \
---page_views_table==$BQ_PAGE_VIEWS \
---service_account=$SERVICE_ACCOUNT
-
+--page_views_table=$BQ_PAGE_VIEWS
 ```
 
 * **Create storage bucket**
@@ -145,15 +145,31 @@ gsutil -m cp -r 'gs://challenge-lab-data-dar/**' gs://$GCS_BUCKET_INPUT/
 
 gsutil mb -p $GOOGLE_CLOUD_PROJECT -l us-central1 gs://$GCS_BUCKET_INPUT-dataflow-temp
 
-gsutil mb -p $GOOGLE_CLOUD_PROJECT -l us-central gs://$GCS_BUCKET_INPUT-dataflow-staging
+gsutil mb -p $GOOGLE_CLOUD_PROJECT -l us-central1 gs://$GCS_BUCKET_INPUT-processed
+
+gsutil mb -p $GOOGLE_CLOUD_PROJECT -l us-central1 gs://$GCS_BUCKET_INPUT-dataflow-ws
+
+gsutil cp -n /dev/null gs://$GCS_BUCKET_INPUT-dataflow-ws/staging/
+gsutil cp -n /dev/null gs://$GCS_BUCKET_INPUT-dataflow-ws/temp/
+gsutil cp -n /dev/null gs://$GCS_BUCKET_INPUT-dataflow-ws/template/
+
+
+gsutil ls -p $GOOGLE_CLOUD_PROJECT | while read bucket; do
+  gsutil retention clear $bucket
+done
 ```
 
 * **Create Pub/Sub topic and pull subscription:**
 ```bash
 gcloud pubsub topics create $PUBSUB_TOPIC_ID --project=$GOOGLE_CLOUD_PROJECT
+gcloud pubsub topics create $PUBSUB_TOPIC_CONF_ID --project=$GOOGLE_CLOUD_PROJECT
 
 gcloud pubsub subscriptions create $PUBSUB_SUB_PULL_ID \
  --topic=$PUBSUB_TOPIC_ID \
+ --project=$GOOGLE_CLOUD_PROJECT \
+ --ack-deadline=10
+ gcloud pubsub subscriptions create $PUBSUB_SUB_CONF_ID \
+ --topic=$PUBSUB_TOPIC_CONF_ID \
  --project=$GOOGLE_CLOUD_PROJECT \
  --ack-deadline=10
 ```
@@ -170,14 +186,118 @@ gcloud secrets delete bigquery_service_account --project=$GOOGLE_CLOUD_PROJECT -
 echo -n $BQ_DATABASE | gcloud secrets create bigquery_dataset_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
 echo -n $BQ_VISITS | gcloud secrets create bigquery_visits_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
 echo -n $BQ_EVENTS | gcloud secrets create bigquery_events_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
-echo -n $BQ_PURCHASE_ITEMS | gcloud secrets create bigquery_purchase_items_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $BQ_PURCHASES | gcloud secrets create bigquery_purchase_items_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
 echo -n $BQ_PAGE_VIEWS | gcloud secrets create bigquery_page_views_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
 echo -n $SERVICE_ACCOUNT | gcloud secrets create bigquery_service_account --data-file=- --project=$GOOGLE_CLOUD_PROJECT
 
 ```
+
+* **Enable services:**
+```bash
+gcloud services enable \
+    compute.googleapis.com \
+    dataflow.googleapis.com \
+    storage.googleapis.com \
+    secretmanager.googleapis.com \
+    bigquery.googleapis.com \
+    composer.googleapis.com \
+    run.googleapis.com \
+    cloudbuild.googleapis.com \
+    artifactregistry.googleapis.com \
+    cloudfunctions.googleapis.com \
+    datastudio.googleapis.com \
+    pubsub.googleapis.com \
+    logging.googleapis.com \
+    monitoring.googleapis.com \
+    --project=$GOOGLE_CLOUD_PROJECT
+```
+
 * **PUBSUB Message Emulator:**
 ```bash
 chmod +x task3/subscribers/cloudrun_push/msg_emulator_local.sh
+```
+
+* **Create repository Artifac Registry**
+```bash
+gcloud artifacts repositories create ecommerce-app \
+  --repository-format=docker \
+  --location=us-central1 \
+  --project=$GOOGLE_CLOUD_PROJECT
+```
+
+```bash
+gcloud artifacts repositories add-iam-policy-binding ecommerce-app \
+  --location=us-central1 \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/artifactregistry.writer \
+  --project=$GOOGLE_CLOUD_PROJECT
+```
+
+* **SET PERMISSIONS**
+```bash
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/bigquery.dataEditor
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/bigquery.jobUser
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/storage.objectViewer
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/storage.objectAdmin
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/storage.bucketViewer
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/composer.user
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/composer.worker
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/logging.logWriter
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/dataflow.worker
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/dataflow.developer
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/pubsub.viewer
+gcloud projects add-iam-policy-binding $GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/cloudscheduler.admin
+
+
+
+gcloud secrets add-iam-policy-binding bigquery_dataset_id \
+  --project=$GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/secretmanager.secretAccessor
+gcloud secrets add-iam-policy-binding bigquery_visits_table_id \
+  --project=$GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/secretmanager.secretAccessor
+gcloud secrets add-iam-policy-binding bigquery_events_table_id \
+  --project=$GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/secretmanager.secretAccessor
+gcloud secrets add-iam-policy-binding bigquery_purchase_items_table_id \
+  --project=$GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/secretmanager.secretAccessor
+gcloud secrets add-iam-policy-binding bigquery_page_views_table_id \
+  --project=$GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/secretmanager.secretAccessor
+gcloud secrets add-iam-policy-binding bigquery_service_account \
+  --project=$GOOGLE_CLOUD_PROJECT \
+  --member=serviceAccount:$SERVICE_ACCOUNT \
+  --role=roles/secretmanager.secretAccessor
 ```
 
 * Some commands to run, initiate, build and etc, are in the readme of the tasks

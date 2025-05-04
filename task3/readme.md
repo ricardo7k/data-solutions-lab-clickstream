@@ -2,32 +2,34 @@
 
 * **Use gcloud builds to send image to Artifact Registry**
 Create your container and send to Artifact Registry, get the image path like this
-`us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/cloudrun_subscriber_push`
 
 ```bash
-gcloud builds gcloud builds submit --tag (your-artifact-registry-repository)/cloudrun_subscriber_push
+gcloud builds submit --tag us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-app/cloudrun_subscriber_push ./task3/subscribers/cloudrun_push
 
 gcloud run deploy cloudrun-subscriber-push \
- --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/cloudrun_subscriber_push" \
+ --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-app/cloudrun_subscriber_push" \
  --platform="managed" \
  --region="us-central1" \
  --service-account="${SERVICE_ACCOUNT}" \
  --set-env-vars="GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT" \
  --allow-"unauthenticated" \
  --project=$GOOGLE_CLOUD_PROJECT
+```
 
+* **Create PUSH subscription:**
+
+```bash
 gcloud pubsub subscriptions create $PUBSUB_SUB_PUSH_ID \
   --topic=$PUBSUB_TOPIC_ID \
   --project=$GOOGLE_CLOUD_PROJECT \
-  --push-endpoint=https://cloudrun-subscriber-push-917499180574.us-central1.run.app \
+  --push-endpoint=<YOUR CLOUD RUN URL> \
   --ack-deadline=10 
 ```
-* **Create Mig solution**
-gcloud builds gcloud builds submit --tag (your-artifact-registry-repository)/cloudrun_subscriber_push
 
+* **Create Mig solution**
 Create image and send to Artifact Registry
 ```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/mig_subscriber_pull
+gcloud builds submit --tag us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-app/mig_subscriber_pull
 ```
 * Create the healthcheck
 ```bash
@@ -96,14 +98,15 @@ gcloud compute firewall-rules create allow-health-check \
 ```
 
 * Run streaming dataflow for click_views
+To test click views per minute run this dataflow to capture the data
 ```bash
 python task3/subscribers/streaming_ingestion_pageviews_pipeline.py \
   --runner=DataflowRunner \
   --pubsub_subscription="projects/$GOOGLE_CLOUD_PROJECT/subscriptions/$PUBSUB_SUB_PULL_ID" \
   --project=${GOOGLE_CLOUD_PROJECT} \
   --region=us-central1 \
-  --staging_location="gs://${GCS_BUCKET_INPUT}-ws/staging" \
-  --temp_location="gs://${GCS_BUCKET_INPUT}-ws/temp" \
+  --staging_location="gs://${GCS_BUCKET_INPUT}-dataflow-ws/staging" \
+  --temp_location="gs://${GCS_BUCKET_INPUT}-dataflow-ws/temp" \
   --gcs_raw_output_path="gs://${GCS_BUCKET_INPUT}" \
   --bq_dataset="$BQ_DATABASE" \
   --bq_page_views_table="$BQ_PAGE_VIEWS" \

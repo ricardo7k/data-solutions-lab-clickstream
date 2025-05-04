@@ -269,10 +269,10 @@ def move_gcs_file(source_path: str, destination_bucket_name: str):
 # --- Apache Beam Pipeline Construction ---
 def run(argv=None):
     # Define the project ID (can be from env var or args)
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
-    if not project_id:
-        print("Error: The GOOGLE_CLOUD_PROJECT environment variable is not set.")
-        sys.exit(1)
+    # project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    # if not project_id:
+    #     print("Error: The GOOGLE_CLOUD_PROJECT environment variable is not set.")
+    #     sys.exit(1)
 
     # Set up command-line arguments
     parser = argparse.ArgumentParser()
