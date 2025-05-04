@@ -62,10 +62,10 @@ def access_secret(secret_id):
         return None
 
 # Get BigQuery dataset and table IDs from Secret Manager
-BIGQUERY_DATASET_ID = access_secret('bigquery_dataset_id') if access_secret('bigquery_dataset_id') else "ecommerce_clickstream"
-BIGQUERY_VISITS_TABLE_ID = access_secret('bigquery_visits_table_id') if access_secret('bigquery_visits_table_id') else "visits"
-BIGQUERY_EVENTS_TABLE_ID = access_secret('bigquery_events_table_id') if access_secret('bigquery_events_table_id') else "events"
-BIGQUERY_PURCHASE_ITEMS_TABLE_ID = access_secret('bigquery_purchase_items_table_id') if access_secret('bigquery_purchase_items_table_id') else "purchase_items"
+BIGQUERY_DATASET_ID = access_secret('bigquery_dataset_id')
+BIGQUERY_VISITS_TABLE_ID = access_secret('bigquery_visits_table_id')
+BIGQUERY_EVENTS_TABLE_ID = access_secret('bigquery_events_table_id')
+BIGQUERY_PURCHASE_ITEMS_TABLE_ID = access_secret('bigquery_purchase_items_table_id')
 
 if not BIGQUERY_DATASET_ID or not BIGQUERY_VISITS_TABLE_ID or not BIGQUERY_EVENTS_TABLE_ID or not BIGQUERY_PURCHASE_ITEMS_TABLE_ID:
     logging.error("BigQuery IDs not retrieved from Secret Manager.")
