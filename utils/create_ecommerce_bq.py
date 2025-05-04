@@ -56,23 +56,55 @@ parser = argparse.ArgumentParser(description="Creates BigQuery dataset and table
 
 # Add an argument for the dataset_id
 parser.add_argument(
-    "dataset_id",
-    type=str,
-    help="The ID of the BigQuery dataset to create (e.g., ecommerce_clickstream)"
+    "--dataset_id",
+    dest="dataset_id",
+    required=True,
+    help="BigQuery dataset ID to write to."
 )
+parser.add_argument(
+    "--visits_table",
+    dest="visits_table",
+    default="visits",
+    help="BigQuery table ID for visits data."
+)
+parser.add_argument(
+    "--events_table",
+    dest="events_table",
+    default="events",
+    help="BigQuery table ID for events data."
+)
+parser.add_argument(
+    "--purchase_items_table",
+    dest="purchase_items_table",
+    default="purchase_items",
+    help="BigQuery table ID for purchase items data."
+)
+parser.add_argument(
+    "--page_views_table",
+    dest="page_views_table",
+    default="page_views",
+    help="BigQuery table ID for page views items data."
+)
+
 
 # Parse the command-line arguments
 args = parser.parse_args()
 
 # Get the project_id from the GOOGLE_CLOUD_PROJECT environment variable
 project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+dataset_id = args.dataset_id
+visits_table_id = args.visits_table
+events_table_id = args.events_table
+purchase_items_table_id = args.purchase_items_table
+page_views_table_id = args.page_views_table
+
+visits_bq_table = f"{project_id}:{dataset_id}.{visits_table_id}"
+events_bq_table = f"{project_id}:{dataset_id}.{events_table_id}"
+purchase_items_bq_table = f"{project_id}:{dataset_id}.{purchase_items_table_id}"
 
 # Check if the environment variable is set
 if not project_id:
     print("Error: The GOOGLE_CLOUD_PROJECT environment variable is not set.")
-    print("Please set it with your Google Cloud project ID before running the script.")
-    print("Example: export GOOGLE_CLOUD_PROJECT='your-project-id' (Linux/macOS)")
-    print("Example: set GOOGLE_CLOUD_PROJECT=your-project-id (Windows Command Prompt)")
     exit(1) # Exit the script with an error
 
 # Get the dataset_id from the command-line argument
@@ -123,9 +155,9 @@ def create_bigquery_table(table_id, schema_fields):
             print(f"Error creating table '{table_id}': {e}")
 
 # Create the tables
-create_bigquery_table("visits", visits_schema_fields)
-create_bigquery_table("events", events_schema_fields)
-create_bigquery_table("purchase_items", purchase_items_schema_fields)
-create_bigquery_table("page_views", page_views_schema_fields)
+create_bigquery_table(visits_table_id, visits_schema_fields)
+create_bigquery_table(events_table_id, events_schema_fields)
+create_bigquery_table(purchase_items_table_id, purchase_items_schema_fields)
+create_bigquery_table(page_views_table_id, page_views_schema_fields)
 
 print("\nScript execution finished.")

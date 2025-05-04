@@ -69,6 +69,29 @@ The original nested JSON schema was redesigned for BigQuery to facilitate easier
 
 To get started with any of the project components, follow the instructions below. More detailed instructions are available in the respective project's README files.
 
+### Configuration
+* **Define environment variables:**
+```bash
+export GOOGLE_CLOUD_PROJECT=`<YOUR PROJECT ID>`
+export SERVICE_ACCOUNT=`<YOUR SERVICE ACCOUNT>`
+export GCS_BUCKET_INPUT=`<YOUR GCS BUCKET NAME>`
+export BQ_DATABASE=`<DEV EMAIL>`
+
+export PUBSUB_TOPIC_ID=`<YOUR PUBSUB TOPIC ID>`
+export PUBSUB_SUB_PULL_ID=`<YOUR PUBSUB PULL SUBSCRIPTION ID>`
+export PUBSUB_SUB_PUSH_ID=`<YOUR PUBSUB PUSH SUBSCRIPTION ID>`
+
+export BQ_DATABASE=`<YOUR BIGQUERY DATABASE NAME>`
+export BQ_VISITS=`<YOUR BIGQUERY VISITS TABLE NAME>`
+export BQ_PURCHASES=`<YOUR BIGQUERY PURCHASES TABLE NAME>`
+export BQ_EVENTS=`<YOUR BIGQUERY EVENTS TABLE NAME>`
+export BQ_PAGE_VIEWS=`<YOUR BIGQUERY PAGE VIEWS TABLE NAME>`
+export DEV_EMAIL=`<YOUR DEV EMAIL>`
+
+gcloud config set project $GOOGLE_CLOUD_PROJECT
+gcloud auth application-default login
+```
+
 ### Prerequisites
 * **Install envieronment python 3.11**
 ```bash
@@ -92,7 +115,7 @@ airflow users create \
     --firstname Admin \
     --lastname User \
     --role Admin \
-    --email ricardo7k@yahoo.com.br \
+    --email $DEV_EMAIL \
     --password admin
 ```
 `Note: If you encounter errors when running DirectRunner:`
@@ -103,23 +126,15 @@ pip uninstall apache-beam
 pip install 'apache-beam[gcp]'
 ```
 
-### Configuration
-* **Define environment variables:**
-```bash
-export GOOGLE_CLOUD_PROJECT="dsl-clickstream"
-export GCS_BUCKET_INPUT="dls-clickstream-data"
-export PUBSUB_TOPIC_ID="ecommerce_clickstream"
-export PUBSUB_SUB_PULL_ID="ecommerce_clickstreamd_pull_sub"
-export PUBSUB_SUB_PUSH_ID="ecommerce_clickstreamd_push_sub"
-export DATAFLOW_SERVICE_ACCOUNT="cloud-run@dsl-clickstream.iam.gserviceaccount.com"
-
-gcloud config set project $GOOGLE_CLOUD_PROJECT
-gcloud auth application-default login
-```
-
 * **Create BigQuery database:**
 ```bash
-python utils/create_ecommerce_bq.py ecommerce_clickstream
+python utils/create_ecommerce_bq.py --dataset_id=$BQ_DATABASE \
+--visits_table=$BQ_VISITS \
+--events_table=$BQ_EVENTS \
+--purchase_items_table=$BQ_PURCHASES \
+--page_views_table==$BQ_PAGE_VIEWS \
+--service_account=$SERVICE_ACCOUNT
+
 ```
 
 * **Create storage bucket**
@@ -143,19 +158,24 @@ gcloud pubsub subscriptions create $PUBSUB_SUB_PULL_ID \
  --ack-deadline=10
 ```
 
-* **Create Secrets for Cloud Run:**
+* **Create Secrets:**
 ```bash
 gcloud secrets delete bigquery_dataset_id --project=$GOOGLE_CLOUD_PROJECT --quiet
 gcloud secrets delete bigquery_visits_table_id --project=$GOOGLE_CLOUD_PROJECT --quiet
 gcloud secrets delete bigquery_events_table_id --project=$GOOGLE_CLOUD_PROJECT --quiet
 gcloud secrets delete bigquery_purchase_items_table_id --project=$GOOGLE_CLOUD_PROJECT --quiet
+gcloud secrets delete bigquery_page_views_table_id --project=$GOOGLE_CLOUD_PROJECT --quiet
+gcloud secrets delete bigquery_service_account --project=$GOOGLE_CLOUD_PROJECT --quiet
 
-echo -n "ecommerce_clickstream" | gcloud secrets create bigquery_dataset_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
-echo -n "visits" | gcloud secrets create bigquery_visits_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
-echo -n "events" | gcloud secrets create bigquery_events_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
-echo -n "purchase_items" | gcloud secrets create bigquery_purchase_items_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $BQ_DATABASE | gcloud secrets create bigquery_dataset_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $BQ_VISITS | gcloud secrets create bigquery_visits_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $BQ_EVENTS | gcloud secrets create bigquery_events_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $BQ_PURCHASE_ITEMS | gcloud secrets create bigquery_purchase_items_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $BQ_PAGE_VIEWS | gcloud secrets create bigquery_page_views_table_id --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+echo -n $SERVICE_ACCOUNT | gcloud secrets create bigquery_service_account --data-file=- --project=$GOOGLE_CLOUD_PROJECT
+
 ```
-* **Create local variables for cloud run local test**
+* **PUBSUB Message Emulator:**
 ```bash
 chmod +x task3/subscribers/cloudrun_push/msg_emulator_local.sh
 ```

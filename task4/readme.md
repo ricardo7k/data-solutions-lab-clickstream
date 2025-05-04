@@ -16,7 +16,7 @@ This task focuses on automating the batch processing workflow using Google Cloud
 gcloud composer environments create maestro-clickstream-pipe-3 \
 --location us-central1 \
 --image-version=composer-3-airflow-2.10.5-build.0 \
---service-account=cloud-run@dsl-clickstream.iam.gserviceaccount.com
+--service-account=$SERVICE_ACCOUNT
 ```
 
 3.  **Create Composer DAG :**
@@ -26,10 +26,10 @@ Prepare the Dataflow Flex template
 # Metadata
 
 ```bash
-gsutil cp task4/metadata.json gs://dls-clickstream-data-dataflow-temp/template/metadata.json
+gsutil cp task4/metadata.json gs://${GCS_BUCKET_INPUT}-dataflow-temp/template/metadata.json
 
-gcloud dataflow flex-template build "gs://dls-clickstream-data-dataflow-temp/template/metadata.json" \
---image "us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/composer_subscriber_pull" \
+gcloud dataflow flex-template build "gs://${GCS_BUCKET_INPUT}-dataflow-temp/template/metadata.json" \
+--image "us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/ecommerce-apps/composer_subscriber_pull" \
 --sdk-language PYTHON \
 --metadata-file "task4/metadata.json" \
 --project $GOOGLE_CLOUD_PROJECT
@@ -40,7 +40,7 @@ gcloud dataflow flex-template build "gs://dls-clickstream-data-dataflow-temp/tem
 ```bash
 cp task1/ecommerce_pipeline.py task4/
 cd task4/
-gcloud builds submit --tag us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/composer_subscriber_pull
+gcloud builds submit --tag us-central1-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/ecommerce-apps/composer_subscriber_pull
 
 gsutil cp ./task4/ecommerce_pipeline_dag.py gs://us-central1-maestro-clickst-7c5386de-bucket/dags/ecommerce_pipeline_dag.py
 ```

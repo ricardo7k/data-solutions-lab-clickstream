@@ -51,8 +51,7 @@ PUBSUB_PAYLOAD='
       "origin": "shell-emulator",
       "timestamp": "'$(date +%s)'"
     }
-  },
-  "subscription": "projects/your-gcp-project-id/subscriptions/your-subscription-id"
+  }
 }
 '
 

@@ -17,23 +17,29 @@ from airflow.utils.trigger_rule import TriggerRule
 
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 GCS_BUCKET_INPUT = os.environ.get("GCS_BUCKET_INPUT")
-GCS_PROCESSED_BUCKET_FINAL = f"{os.environ.get('GCS_BUCKET_INPUT')}-processed"
-FLEX_TEMPLATE_GCS_PATH = "gs://dls-clickstream-data-dataflow-temp/template/metadata.json"
+SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT")
+BQ_DATABASE = os.environ.get("BQ_DATABASE")
+BQ_VISITS = os.environ.get("BQ_VISITS")
+BQ_EVENTS = os.environ.get("BQ_EVENTS")
+BQ_PURCHASE_ITEMS = os.environ.get("BQ_PURCHASE_ITEMS")
+GCS_PROCESSED_BUCKET_FINAL = f"{GCS_BUCKET_INPUT}-processed"
+FLEX_TEMPLATE_GCS_PATH = f"{GCS_BUCKET_INPUT}-dataflow-temp/template/metadata.json"
+
 FLEX_TEMPLATE_PARAMETERS = {
-    "gcs_input_path": f"gs://{os.environ.get('GCS_BUCKET_INPUT')}/*.jsonl",
-    "dataset_id": "ecommerce_clickstream",
-    "visits_table": "visits",
-    "events_table": "events",
-    "purchase_items_table": "purchase_items",
+    "gcs_input_path": f"gs://{GCS_BUCKET_INPUT}/*.jsonl",
+    "dataset_id": BQ_DATABASE,
+    "visits_table": BQ_VISITS,
+    "events_table": BQ_EVENTS,
+    "purchase_items_table": BQ_PURCHASE_ITEMS,
     "write_disposition": "append",
     "gcs_destination_bucket": GCS_PROCESSED_BUCKET_FINAL,
     "launched_by": "composer"
 }
 FLEX_TEMPLATE_ENVIRONMENT = {
-    "serviceAccountEmail": "cloud-run@dsl-clickstream.iam.gserviceaccount.com",
+    "serviceAccountEmail": {SERVICE_ACCOUNT},
     "machineType": "e2-medium",
-    "stagingLocation": f"gs://{os.environ.get('GCS_BUCKET_INPUT')}-dataflow-temp/staging",
-    "tempLocation": f"gs://{os.environ.get('GCS_BUCKET_INPUT')}-dataflow-temp/temp",
+    "stagingLocation": f"gs://{GCS_BUCKET_INPUT}-dataflow-temp/staging",
+    "tempLocation": f"gs://{GCS_BUCKET_INPUT}-dataflow-temp/temp",
 }
 PUBSUB_TOPIC_ID = "ecommerce-pipeline-done"
 

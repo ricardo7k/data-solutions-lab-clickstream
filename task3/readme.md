@@ -1,14 +1,17 @@
 # Real-time Data Processing (Task 3)
 
 * **Use gcloud builds to send image to Artifact Registry**
+Create your container and send to Artifact Registry, get the image path like this
+`us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/cloudrun_subscriber_push`
+
 ```bash
 gcloud builds gcloud builds submit --tag (your-artifact-registry-repository)/cloudrun_subscriber_push
 
 gcloud run deploy cloudrun-subscriber-push \
- --image="us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/cloudrun_subscriber_push" \
+ --image="us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/cloudrun_subscriber_push" \
  --platform="managed" \
  --region="us-central1" \
- --service-account="cloud-run@dsl-clickstream.iam.gserviceaccount.com" \
+ --service-account="${SERVICE_ACCOUNT}" \
  --set-env-vars="GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT" \
  --allow-"unauthenticated" \
  --project=$GOOGLE_CLOUD_PROJECT
@@ -20,9 +23,11 @@ gcloud pubsub subscriptions create $PUBSUB_SUB_PUSH_ID \
   --ack-deadline=10 
 ```
 * **Create Mig solution**
+gcloud builds gcloud builds submit --tag (your-artifact-registry-repository)/cloudrun_subscriber_push
+
 Create image and send to Artifact Registry
 ```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/mig_subscriber_pull
+gcloud builds submit --tag us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/mig_subscriber_pull
 ```
 * Create the healthcheck
 ```bash
@@ -43,10 +48,10 @@ gcloud compute health-checks create http mig-subscriber-health-check \
 ```bash
 gcloud compute instance-templates create-with-container mig-subscriber-template \
   --project=$GOOGLE_CLOUD_PROJECT \
-  --machine-type=e2-medium \
+  --machine-type=e2-small \
   --network-interface=network=default,stack-type=IPV4_ONLY,no-address \
-  --container-image=us-central1-docker.pkg.dev/dsl-clickstream/ecommerce-apps/mig_subscriber_pull \
-  --service-account=cloud-run@dsl-clickstream.iam.gserviceaccount.com \
+  --container-image=us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/mig_subscriber_pull \
+  --service-account=${SERVICE_ACCOUNT} \
   --metadata=google-logging-enabled=true \
   --scopes=cloud-platform \
   --tags=pubsub-subscriber \
@@ -65,7 +70,7 @@ gcloud compute instance-groups managed create mig-pubsub-subscriber \
   --base-instance-name=subscriber-vm \
   --template=mig-subscriber-template \
   --size=1 \
-  --health-check="https://www.googleapis.com/compute/v1/projects/dsl-clickstream/regions/us-central1/healthChecks/mig-subscriber-health-check" \
+  --health-check="https://www.googleapis.com/compute/v1/projects/$GOOGLE_CLOUD_PROJECT/regions/us-central1/healthChecks/mig-subscriber-health-check" \
   --initial-delay=300
 ```
 
@@ -77,7 +82,7 @@ gcloud compute instance-groups managed set-autoscaling mig-pubsub-subscriber \
   --max-num-replicas=3 \
   --min-num-replicas=1 \
   --stackdriver-metric-filter=resource.type\ \
-=\ pubsub_subscription\ AND\ resource.labels.subscription_id\ =\ \"ecommerce_clickstreamd_pull_sub\" \
+=\ pubsub_subscription\ AND\ resource.labels.subscription_id\ =\ \"$PUBSUB_SUB_PULL_ID\" \
   --update-stackdriver-metric=pubsub.googleapis.com/subscription/num_undelivered_messages \
   --stackdriver-metric-single-instance-assignment=10.0
 ```
@@ -100,10 +105,32 @@ python task3/subscribers/streaming_ingestion_pageviews_pipeline.py \
   --staging_location="gs://${GCS_BUCKET_INPUT}-ws/staging" \
   --temp_location="gs://${GCS_BUCKET_INPUT}-ws/temp" \
   --gcs_raw_output_path="gs://${GCS_BUCKET_INPUT}" \
-  --bq_dataset="ecommerce_clickstream" \
-  --bq_page_views_table="page_views" \
+  --bq_dataset="$BQ_DATABASE" \
+  --bq_page_views_table="$BQ_PAGE_VIEWS" \
   --window_size_minutes=1 \
   --num_gcs_shards=5 \
   --dos=10 \
   --streaming
+```
+
+
+* Scheduler
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/cloudrun_scheduler_ecommerce_pipeline ./task1/
+
+gcloud --project=$GOOGLE_CLOUD_PROJECT run jobs create ecommerce-pipeline-append-job \
+    --image us-central1-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/ecommerce-apps/cloudrun_scheduler_ecommerce_pipeline \
+    --region us-central1 \
+    --set-env-vars GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,GCS_BUCKET_INPUT=$GCS_BUCKET_INPUT \
+    --service-account ${SERVICE_ACCOUNT} \
+    --max-retries 3
+
+gcloud --project=$GOOGLE_CLOUD_PROJECT run jobs update ecommerce-pipeline-append-job \
+    --region=us-central1 \                                                                
+    --set-env-vars GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT,GCS_BUCKET_INPUT=$GCS_BUCKET_INPUT,DATAFLOW_SERVICE_ACCOUNT=$SERVICE_ACCOUNT \
+    --schedule="*/15 * * * *" \
+    --location=us-central1 \
+    --uri="https://us-central1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/$GOOGLE_CLOUD_PROJECT/jobs/ecommerce-pipeline-append-job:run" \
+    --oauth-service-account-email ${SERVICE_ACCOUNT} \
+    --oauth-token-scope=https://www.googleapis.com/auth/cloud-platform
 ```
