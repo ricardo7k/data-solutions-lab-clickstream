@@ -65,6 +65,10 @@ This project involved several key tasks, leveraging various GCP services, as det
 
 The original nested JSON schema was redesigned for BigQuery to facilitate easier SQL querying. This typically involves flattening the `events` array and potentially creating separate tables for different event types or unnesting structures within BigQuery queries or views.
 
+## Looker Studio Dashboard
+
+[This is an external link to Looker](https://lookerstudio.google.com/reporting/cf13ae3c-22eb-4125-b4da-19f5b649912b)
+
 ## Getting Started
 
 To get started with any of the project components, follow the instructions below. More detailed instructions are available in the respective project's README files.

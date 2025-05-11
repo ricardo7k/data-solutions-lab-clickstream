@@ -1,0 +1,51 @@
+erDiagram
+    PAGE_VIEWS {
+        timestamp window_end PK "REQUIRED"
+        int page_view_count "REQUIRED"
+    }
+
+    VISITS {
+        string session_id PK "REQUIRED"
+        string user_id "NULLABLE (mode not specified)"
+        string device_type "NULLABLE (mode not specified)"
+        string geolocation "NULLABLE (mode not specified)"
+        string user_agent "NULLABLE (mode not specified)"
+        timestamp start_timestamp "NULLABLE (mode not specified)"
+        timestamp end_timestamp "NULLABLE (mode not specified)"
+        int event_count "NULLABLE (mode not specified)"
+    }
+
+    EVENTS {
+        string session_id PK, FK "REQUIRED, Part of Composite PK"
+        string event_unique_id PK "REQUIRED, Part of Composite PK"
+        string event_type "REQUIRED"
+        timestamp timestamp "REQUIRED"
+        string page_url "NULLABLE"
+        string referrer_url "NULLABLE"
+        string product_id "NULLABLE"
+        string product_name "NULLABLE"
+        string category "NULLABLE"
+        float price "FLOAT64, NULLABLE"
+        int quantity "NULLABLE"
+        string order_id "NULLABLE"
+        float amount "FLOAT64, NULLABLE"
+        string currency "NULLABLE"
+        string device_type "NULLABLE (denormalized)"
+        string user_id "NULLABLE (denormalized)"
+    }
+
+    PURCHASE_ITEMS {
+        string order_id PK "REQUIRED, Part of Composite PK"
+        int item_index_in_order PK "REQUIRED, Part of Composite PK"
+        string session_id FK "REQUIRED"
+        string product_id "REQUIRED"
+        string product_name "NULLABLE (mode not specified)"
+        string category "NULLABLE (mode not specified)"
+        float price "FLOAT64, NULLABLE (mode not specified)"
+        int quantity "NULLABLE (mode not specified)"
+        timestamp purchase_event_timestamp "NULLABLE"
+    }
+
+    VISITS ||--o{ EVENTS : "has_session_events"
+    VISITS ||--o{ PURCHASE_ITEMS : "has_session_purchase_items"
+
